@@ -1,18 +1,123 @@
+import { exec, spawn } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import simpleGit from 'simple-git'
 import * as vscode from 'vscode';
 
+let exePath = "";
+let isWindow = false;
+
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "vccprojectgeneratorvscodeextension" is now active!');
+	isWindow = process.platform === 'win32';
+	validateVCCProjectGenerator();
+	
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from VCCProjectGeneratorVSCodeExtension!');
+	let disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-dll', () => {
+		vscode.window.showInformationMessage('Create CPP DLL Template!');
 	});
+	context.subscriptions.push(disposable);
 
+	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-exe', () => {
+		vscode.window.showInformationMessage('Create CPP EXE Template!');
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-complex', () => {
+		vscode.window.showInformationMessage('Create CPP Complex Template!');
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-dll', () => {
+		vscode.window.showInformationMessage('Create VCC DLL CPP Module!');
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-exe', () => {
+		vscode.window.showInformationMessage('Create VCC EXE CPP Module!');
+	});
+	context.subscriptions.push(disposable);
+
+	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-complex', () => {
+		vscode.window.showInformationMessage('Create VCC Complex CPP Module!');
+	});
 	context.subscriptions.push(disposable);
 }
 
 export function deactivate() {}
+
+
+function validateVCCProjectGenerator() {
+	validateVCCProjectGeneratorFoder();
+
+}
+
+async function validateVCCProjectGeneratorFoder() {
+	let currentDirectory = __dirname;
+	try {
+		console.log('Check whether VCCProjectGenerator binary exists - begin');
+		let documentPath = path.join(os.homedir(), 'Documents');
+		console.log('cd ' + documentPath);
+		process.chdir(documentPath);
+
+		// check if vcc folder exists, if not then create directory
+		// check if vcc/VCCProjectGeneratorDLL exists, if not then git
+		let vccFolder = 'vcc';
+		if (!fs.existsSync(vccFolder)) {
+			console.log('Created Directory ' + vccFolder + ' begin');
+			fs.mkdirSync(vccFolder);
+			console.log('Created Directory ' + vccFolder + ' end');
+		}
+		console.log('cd ' + vccFolder);
+		process.chdir(vccFolder);
+
+		let vpgFolder = 'VCCProjectGeneratorDLL';
+		if (!fs.existsSync(vpgFolder)) {
+			const git = simpleGit();
+			git.clone('https://github.com/s1155003185/VCCProjectGeneratorDLL', vpgFolder)
+				.then(() => {
+					console.log('Clone completed.');
+				})
+				.catch((error) => {
+					console.error('Error: ', error);	
+				});
+		}
+		console.log('cd ' + vpgFolder);
+		process.chdir(vpgFolder);
+
+		let exePath = isWindow ? 'bin/Release/vpg.exe' : 'bin/Release/vpg';
+		if (!fs.existsSync(exePath)) {
+			console.log('make begin');
+			await executeMakeCommand('make', ['release']);
+			console.log('make end');
+		}
+		exePath = path.join(process.cwd(), exePath);
+		console.log('exe path: ' + exePath);
+		if (!fs.existsSync(exePath)) {
+			throw new Error(exePath + ' does not exist.');
+		}
+		console.log('Check whether VCCProjectGenerator binary exists - done');
+	} catch (error) {
+		throw error;
+	} finally {
+		process.chdir(currentDirectory);
+	}
+}
+
+function executeMakeCommand(command: string, args: string[]): Promise<void> {
+	return new Promise((resolve, reject) => {
+	  const makeProcess = spawn(command, args, { stdio: 'inherit' });
+  
+	  makeProcess.on('exit', (code) => {
+		if (code === 0) {
+		  console.log('Process complete.');
+		  resolve();
+		} else {
+		  reject('Process failed with exit code ${code}.');
+		}
+	  });
+	});
+  }
