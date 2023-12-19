@@ -36,8 +36,27 @@
       {
         "command": "vccprojectgeneratorvscodeextension.create-vcc-cpp-complex",
         "title": "Create VCC Complex Project"
+      },
+      {
+          "command": "vccprojectgeneratorvscodeextension.openOptionsPage",
+          "title": "Open Options Page"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "vccprojectgeneratorvscodeextension",
+      "properties": {
+        "vccprojectgeneratorvscodeextension.onlyCreateNessaryFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Only Create Necessary files"
+        },
+        "vccprojectgeneratorvscodeextension.includeVCCUnitTest": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include VCC Unit Test"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

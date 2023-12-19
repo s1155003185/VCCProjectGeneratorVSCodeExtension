@@ -16,35 +16,34 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-dll', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-dll', () => {
 		vscode.window.showInformationMessage('Create CPP DLL Template!');
-	});
-	context.subscriptions.push(disposable);
+	}));
 
-	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-exe', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-exe', () => {
 		vscode.window.showInformationMessage('Create CPP EXE Template!');
-	});
-	context.subscriptions.push(disposable);
+	}));
 
-	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-complex', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-complex', () => {
 		vscode.window.showInformationMessage('Create CPP Complex Template!');
-	});
-	context.subscriptions.push(disposable);
+	}));
 
-	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-dll', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-dll', () => {
 		vscode.window.showInformationMessage('Create VCC DLL CPP Module!');
-	});
-	context.subscriptions.push(disposable);
+	}));
 
-	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-exe', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-exe', () => {
 		vscode.window.showInformationMessage('Create VCC EXE CPP Module!');
-	});
-	context.subscriptions.push(disposable);
+	}));
 
-	disposable = vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-complex', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-complex', () => {
 		vscode.window.showInformationMessage('Create VCC Complex CPP Module!');
+	}));
+
+	// option
+	vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.openOptionsPage', () => {
+		vscode.commands.executeCommand('workbench.action.openSettings', 'vccprojectgeneratorvscodeextension');
 	});
-	context.subscriptions.push(disposable);
 }
 
 export function deactivate() {}
