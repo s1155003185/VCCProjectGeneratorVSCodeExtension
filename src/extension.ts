@@ -73,16 +73,11 @@ async function validateVCCProjectGeneratorFoder() {
 		console.log('cd ' + vccFolder);
 		process.chdir(vccFolder);
 
-		let vpgFolder = 'VCCProjectGeneratorDLL';
+		let vpgFolder = 'VCCProjectGenerator';
 		if (!fs.existsSync(vpgFolder)) {
-			const git = simpleGit();
-			git.clone('https://github.com/s1155003185/VCCProjectGeneratorDLL', vpgFolder)
-				.then(() => {
-					console.log('Clone completed.');
-				})
-				.catch((error) => {
-					console.error('Error: ', error);	
-				});
+			console.log('git begin');
+			await executeCommand('git', ['clone', 'https://github.com/s1155003185/' + vpgFolder, vpgFolder]);
+			console.log('git end');
 		}
 		console.log('cd ' + vpgFolder);
 		process.chdir(vpgFolder);
@@ -90,7 +85,7 @@ async function validateVCCProjectGeneratorFoder() {
 		let exePath = isWindow ? 'bin/Release/vpg.exe' : 'bin/Release/vpg';
 		if (!fs.existsSync(exePath)) {
 			console.log('make begin');
-			await executeMakeCommand('make', ['release']);
+			await executeCommand('make', ['release']);
 			console.log('make end');
 		}
 		exePath = path.join(process.cwd(), exePath);
@@ -106,11 +101,11 @@ async function validateVCCProjectGeneratorFoder() {
 	}
 }
 
-function executeMakeCommand(command: string, args: string[]): Promise<void> {
+function executeCommand(command: string, args: string[]): Promise<void> {
 	return new Promise((resolve, reject) => {
-	  const makeProcess = spawn(command, args, { stdio: 'inherit' });
+	  const process = spawn(command, args, { stdio: 'inherit' });
   
-	  makeProcess.on('exit', (code) => {
+	  process.on('exit', (code) => {
 		if (code === 0) {
 		  console.log('Process complete.');
 		  resolve();
