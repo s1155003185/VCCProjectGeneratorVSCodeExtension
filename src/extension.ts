@@ -5,6 +5,8 @@ import * as path from 'path';
 import simpleGit from 'simple-git'
 import * as vscode from 'vscode';
 
+let version = "main";
+
 let exePath = "";
 let isWindow = false;
 
@@ -79,6 +81,22 @@ async function validateVCCProjectGeneratorFoder() {
 			await executeCommand('git', ['clone', 'https://github.com/s1155003185/' + vpgFolder, vpgFolder]);
 			console.log('git end');
 		}
+		// check version
+		console.log('git check version begin');
+		let isNeedToSwitch = false;
+		try {
+			let projectGeneratorVersion = await executeCommand('git', ['describe', '--tags']);
+			console.log('Current VCCProjectGenerator Extension version: ' + version);
+			console.log('Current VCCProjectGenerator version: ' + projectGeneratorVersion);
+			if (!projectGeneratorVersion.startsWith(version)) {
+				console.log('Switch to version: ' + version);
+				await executeCommand('git', ['checkout', version]);
+			}
+		} catch (error) {
+			console.log('Cannot get VCCProjectGenerator version');
+		}
+		console.log('git check version end');
+
 		console.log('cd ' + vpgFolder);
 		process.chdir(vpgFolder);
 
@@ -101,16 +119,22 @@ async function validateVCCProjectGeneratorFoder() {
 	}
 }
 
-function executeCommand(command: string, args: string[]): Promise<void> {
+function executeCommand(command: string, args: string[]): Promise<string> {
 	return new Promise((resolve, reject) => {
-	  const process = spawn(command, args, { stdio: 'inherit' });
+	  const process = spawn(command, args);
+  
+	  let stdout = '';
+  
+	  process.stdout.on('data', (data) => {
+		stdout += data.toString();
+	  });
   
 	  process.on('exit', (code) => {
 		if (code === 0) {
 		  console.log('Process complete.');
-		  resolve();
+		  resolve(stdout.trim());
 		} else {
-		  reject('Process failed with exit code ${code}.');
+		  reject(`Process failed with exit code ${code}.`);
 		}
 	  });
 	});
