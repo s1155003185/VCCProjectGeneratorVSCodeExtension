@@ -2,117 +2,229 @@ import { exec, spawn } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import simpleGit from 'simple-git'
 import * as vscode from 'vscode';
 
-let version = "main";
+let version = "20240414FirstReleaseFinalAdjust";
 
-let exePath = "";
 let isWindow = false;
 
 export function activate(context: vscode.ExtensionContext) {
 	isWindow = process.platform === 'win32';
-	validateVCCProjectGenerator();
-	
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-dll', () => {
-		vscode.window.showInformationMessage('Create CPP DLL Template!');
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Add', '-interface', 'CPPDLL', '-workspace-destination', workspace]);
+			logMessage('Create CPP DLL Template!');
+		} else {
+			logError('No workspace open.');
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-exe', () => {
-		vscode.window.showInformationMessage('Create CPP EXE Template!');
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Add', '-interface', 'CPPEXE', '-workspace-destination', workspace]);
+			logMessage('Create CPP EXE Template Complete!');
+		} else {
+			logError('No workspace open.');
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-cpp-complex', () => {
-		vscode.window.showInformationMessage('Create CPP Complex Template!');
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Add', '-interface', 'CPPCOMPLEX', '-workspace-destination', workspace]);
+			logMessage('Create CPP Complex Template Complete!');
+		} else {
+			logError('No workspace open.');
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-dll', () => {
-		vscode.window.showInformationMessage('Create VCC DLL CPP Module!');
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Add', '-interface', 'VCCDLL', '-workspace-destination', workspace]);
+			logMessage('Create VCC DLL CPP Module Complete!');
+		} else {
+			logError('No workspace open.');
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-exe', () => {
-		vscode.window.showInformationMessage('Create VCC EXE CPP Module!');
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Add', '-interface', 'VCCEXE', '-workspace-destination', workspace]);
+			logMessage('Create VCC EXE CPP Module Complete!');
+		} else {
+			logError('No workspace open.');
+		}
 	}));
-
+	
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-complex', () => {
-		vscode.window.showInformationMessage('Create VCC Complex CPP Module!');
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Add', '-interface', 'VCCCOMPLEXE', '-workspace-destination', workspace]);
+			logMessage('Create VCC Complex CPP Module!');
+		} else {
+			logError('No workspace open.');
+		}
 	}));
 
-	// option
-	vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.openOptionsPage', () => {
-		vscode.commands.executeCommand('workbench.action.openSettings', 'vccprojectgeneratorvscodeextension');
-	});
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.update-vcc-cpp', () => {
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Update', '-workspace-destination', workspace]);
+			logMessage('Update VCC Module!');
+		} else {
+			logError('No workspace open.');
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.generate-vcc-cpp', () => {
+		let workspace = getCurrentWorkspaceName();
+		if (workspace) {
+			execute(['-Generate', '-workspace-destination', workspace]);
+			logMessage('Generate VCC Module!');
+		} else {
+			logError('No workspace open.');
+		}
+	}));
 }
 
 export function deactivate() {}
 
-
-function validateVCCProjectGenerator() {
-	validateVCCProjectGeneratorFoder();
-
+function logMessage(message: string) {
+	console.log(message);
+	vscode.window.showInformationMessage(message);
 }
 
-async function validateVCCProjectGeneratorFoder() {
+function logError(message: string) {
+	console.error(message);
+	vscode.window.showErrorMessage(message);
+}
+
+function getCurrentWorkspaceName(): string | undefined {
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+	if (workspaceFolders && workspaceFolders.length > 0) {
+		const workspaceFolder = workspaceFolders[0];
+		const fullPath = workspaceFolder.uri.fsPath;
+		return `"${path.normalize(fullPath)}"`;
+	}
+	return undefined;
+}
+
+function execute(vpgCmds: string[]) {
+	executeAsync(vpgCmds);
+}
+
+async function executeAsync(vpgCmds: string[]) {
 	let currentDirectory = __dirname;
 	try {
-		console.log('Check whether VCCProjectGenerator binary exists - begin');
+		// -------------------------------------------------- //
+		// Validate VCCProjectGenerator
+		// -------------------------------------------------- //
+		logMessage('Check whether VCCProjectGenerator binary exists - begin');
 		let documentPath = path.join(os.homedir(), 'Documents');
-		console.log('cd ' + documentPath);
+		logMessage('cd ' + documentPath);
 		process.chdir(documentPath);
 
 		// check if vcc folder exists, if not then create directory
 		// check if vcc/VCCProjectGeneratorDLL exists, if not then git
-		let vccFolder = 'vcc';
+		let vccFolder = documentPath + '/VCC';
 		if (!fs.existsSync(vccFolder)) {
-			console.log('Created Directory ' + vccFolder + ' begin');
+			logMessage('Created Directory ' + vccFolder + ' begin');
 			fs.mkdirSync(vccFolder);
-			console.log('Created Directory ' + vccFolder + ' end');
+			logMessage('Created Directory ' + vccFolder + ' end');
 		}
-		console.log('cd ' + vccFolder);
+		logMessage('cd ' + vccFolder);
 		process.chdir(vccFolder);
 
-		let vpgFolder = 'VCCProjectGenerator';
+		let vpgFolder = vccFolder + '/VCCProjectGenerator';
 		if (!fs.existsSync(vpgFolder)) {
-			console.log('git begin');
-			await executeCommand('git', ['clone', 'https://github.com/s1155003185/' + vpgFolder, vpgFolder]);
-			console.log('git end');
+			logMessage('git begin');
+			await executeCommand('git', ['clone', 'https://github.com/s1155003185/VCCProjectGenerator', vpgFolder]);
+			logMessage('git end');
 		}
 		// check version
-		console.log('git check version begin');
-		let isNeedToSwitch = false;
+		logMessage('git check version begin');
+		let currentHashID = '';
 		try {
-			let projectGeneratorVersion = await executeCommand('git', ['describe', '--tags']);
-			console.log('Current VCCProjectGenerator Extension version: ' + version);
-			console.log('Current VCCProjectGenerator version: ' + projectGeneratorVersion);
+			logMessage('cd ' + vpgFolder);
+			process.chdir(vpgFolder);
+
+			logMessage('Current VCCProjectGenerator Extension version: ' + version);
+
+			currentHashID = await executeCommand('git', ['rev-parse', 'HEAD']);
+			// check VCCProjectGenerator version
+			try {
+				await executeCommand('git', ['pull']);
+			} catch (error) {
+				logMessage('Cannot git pull');
+				//throw new Error('Cannot git pull');				
+			}
+			let projectGeneratorVersion = "";
+			try {
+				// tag
+				projectGeneratorVersion = await executeCommand('git', ['describe', '--tags']);
+			} catch (error) {
+				// branch
+				projectGeneratorVersion = await executeCommand('git', ['branch', '--show-current']);
+			}
+			logMessage('Current VCCProjectGenerator version: ' + projectGeneratorVersion);
 			if (!projectGeneratorVersion.startsWith(version)) {
-				console.log('Switch to version: ' + version);
+				logMessage('Switch to version: ' + version);
 				await executeCommand('git', ['checkout', version]);
 			}
 		} catch (error) {
-			console.log('Cannot get VCCProjectGenerator version');
+			logMessage('Cannot get VCCProjectGenerator version');
+			throw new Error('Cannot get VCCProjectGenerator version');
 		}
-		console.log('git check version end');
+		logMessage('git check version end');
 
-		console.log('cd ' + vpgFolder);
+		logMessage('cd ' + vpgFolder);
 		process.chdir(vpgFolder);
 
-		let exePath = isWindow ? 'bin/Release/vpg.exe' : 'bin/Release/vpg';
-		if (!fs.existsSync(exePath)) {
-			console.log('make begin');
-			await executeCommand('make', ['release']);
-			console.log('make end');
-		}
+		var exePath = isWindow ? 'bin/Release/vpg.exe' : 'bin/Release/vpg';
+
+		let newHashID = await executeCommand('git', ['rev-parse', 'HEAD']);
+		// var exePath = isWindow ? 'bin/Debug/vpg.exe' : 'bin/Debug/vpg';
+		// if (!fs.existsSync(exePath)) {
+		// 	logMessage('make begin');
+		// 	await executeCommand('make', ['debug', "-j10"]);
+		// 	logMessage('make end');
+		// }
 		exePath = path.join(process.cwd(), exePath);
-		console.log('exe path: ' + exePath);
+		logMessage('exe path: ' + exePath);
+		if (currentHashID !== newHashID || !fs.existsSync(exePath)) {
+			logMessage('make begin');
+			await executeCommand('make', ['release_exe', '-j10']);
+			logMessage('make end');
+		}
 		if (!fs.existsSync(exePath)) {
 			throw new Error(exePath + ' does not exist.');
 		}
-		console.log('Check whether VCCProjectGenerator binary exists - done');
+		logMessage('Check whether VCCProjectGenerator binary exists - done');
+
+		// -------------------------------------------------- //
+		// Execute VCC Project Generator
+		// -------------------------------------------------- //
+		logMessage('Execute vpg ' + vpgCmds.join(' '));
+		exec('"' + exePath + '" ' + vpgCmds.join(' '),  (error, stdout, stderr) => {
+			if (error) {
+				logMessage(`exec error: ${error}`);
+			  	return;
+			}
+			logMessage(`stdout: ${stdout}`);
+			logMessage(`stderr: ${stderr}`);
+			console.error(`stderr: ${stderr}`);
+		});
 	} catch (error) {
+		console.error(`executeAsync error: ${error}`);
+		logError(`executeAsync error: ${error}`);
 		throw error;
 	} finally {
 		process.chdir(currentDirectory);
@@ -131,7 +243,7 @@ function executeCommand(command: string, args: string[]): Promise<string> {
   
 	  process.on('exit', (code) => {
 		if (code === 0) {
-		  console.log('Process complete.');
+		  logMessage('Process complete.');
 		  resolve(stdout.trim());
 		} else {
 		  reject(`Process failed with exit code ${code}.`);

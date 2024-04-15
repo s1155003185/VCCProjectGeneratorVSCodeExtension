@@ -38,7 +38,6 @@ Initialize
 
 ## Install package
 npm install
-npm install simple-git
 
 ## Contribution
 
