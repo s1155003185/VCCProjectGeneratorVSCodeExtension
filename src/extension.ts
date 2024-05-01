@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-let version = "20240414FirstReleaseFinalAdjust";
+let version = 'v0.0.1';
 
 let isWindow = false;
 
@@ -152,6 +152,7 @@ async function executeAsync(vpgCmds: string[]) {
 		// check version
 		logMessage('git check version begin');
 		let currentHashID = '';
+		let projectGeneratorVersion = "";
 		try {
 			logMessage('cd ' + vpgFolder);
 			process.chdir(vpgFolder);
@@ -166,7 +167,6 @@ async function executeAsync(vpgCmds: string[]) {
 				logMessage('Cannot git pull');
 				//throw new Error('Cannot git pull');				
 			}
-			let projectGeneratorVersion = "";
 			try {
 				// tag
 				projectGeneratorVersion = await executeCommand('git', ['describe', '--tags']);
@@ -175,14 +175,21 @@ async function executeAsync(vpgCmds: string[]) {
 				projectGeneratorVersion = await executeCommand('git', ['branch', '--show-current']);
 			}
 			logMessage('Current VCCProjectGenerator version: ' + projectGeneratorVersion);
-			if (!projectGeneratorVersion.startsWith(version)) {
-				logMessage('Switch to version: ' + version);
-				await executeCommand('git', ['checkout', version]);
-			}
 		} catch (error) {
 			logMessage('Cannot get VCCProjectGenerator version');
 			throw new Error('Cannot get VCCProjectGenerator version');
 		}
+		try {
+			if (!projectGeneratorVersion.startsWith(version)) {
+				logMessage('Switch to version: ' + version);
+				await executeCommand('git', ['reset', '--hard']);
+				await executeCommand('git', ['checkout', version]);
+			}
+		} catch (error) {
+			logMessage('Cannot get Switch to version ' + projectGeneratorVersion + ': ' + error);
+			throw new Error('Cannot get Switch to version ' + projectGeneratorVersion + ': ' + error);
+		}
+
 		logMessage('git check version end');
 
 		logMessage('cd ' + vpgFolder);
