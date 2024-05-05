@@ -1,6 +1,7 @@
 # VCCProjectGenerator / VCCProjectGenerator VSCode Extension
 ### Versioning Common Codebase Project / Versioning Coding Cooperation Project
 Note: Still in initialize version, will have full review when official release
+Note: Don't use XMLReader, it will be combined with Builder and rename to XMLBuilder later
 
 ## Versioning Common Codebase Project / Versioning Coding Cooperation Project Introduction
 Document versioning are highly expected but seems no solution at the moment. Also, current existing document processors have straight behavior, such as auto creating style which make characters disappeared, saving whole document for each save, lagging for large document, etc. Unfortunately, seems that those behaviors are not bug. Enhancement cannot be expected. So, Versioning Coding Cooperation Project is introducted to develop a document versioning system.
@@ -398,6 +399,13 @@ To build release
 make release -j10
 ```
 
+To clean project
+```
+make clean
+```
+
+Other command can be refer to Makefile
+
 Debug program is built in bin/Debug
 Release program is built in bin/Release
 
@@ -460,6 +468,9 @@ X(Twitter) @VCCProject
 
 ****
 ## Release Log
+2024-05-05 v0.0.2
+- Fix cannot reexecute after switched to tag
+
 2024-05-05 First Release: v0.0.1
 
 2023-12-23 Combine VCCProjectGeneratorEXE and VCCProjectGeneratorDLL and rename to VCCProjectGenerator
