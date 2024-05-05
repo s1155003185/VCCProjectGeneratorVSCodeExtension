@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-let version = 'v0.0.1';
+let version = 'v0.0.2';
 
 let isWindow = false;
 
