@@ -1,8 +1,26 @@
 {
   "name": "vccprojectgeneratorvscodeextension",
-  "displayName": "VCCProjectGeneratorVSCodeExtension",
-  "description": "",
+  "displayName": "Versioning Common Codebase Project Generator",
+  "description": "Free, Open Project to Create, Update, Generate Interface + C++ DLL",
   "version": "0.0.1",
+  "icon": "icon.png",
+  "pricing": "Free",
+  "author": "VCCProject",
+  "publisher": "VCCProject",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/s1155003185/VCCProjectGeneratorVSCodeExtension"
+  },
+  "twitter": "@VCCProject",
+  "keywords": [
+    "C++",
+    "CPP",
+    "Cross Platform",
+    "VCC",
+    "VCCProject",
+    "template"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
