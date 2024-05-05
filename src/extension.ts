@@ -4,13 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-let version = 'v0.0.2';
-
-let isWindow = false;
-
 export function activate(context: vscode.ExtensionContext) {
-	isWindow = process.platform === 'win32';
-
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -124,6 +118,18 @@ function execute(vpgCmds: string[]) {
 async function executeAsync(vpgCmds: string[]) {
 	let currentDirectory = __dirname;
 	try {
+		let isWindow = process.platform === 'win32';
+		const extension = vscode.extensions.getExtension('VCCProject.vccprojectgeneratorvscodeextension');
+		let version = '';
+		if (extension) {
+			version = extension.packageJSON.version;
+			if (!version.startsWith('v')) {
+				version = 'v' + version;
+			}
+		} else {
+			version = 'main';
+		}
+
 		// -------------------------------------------------- //
 		// Validate VCCProjectGenerator
 		// -------------------------------------------------- //
