@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('vccprojectgeneratorvscodeextension.create-vcc-cpp-complex', () => {
 		let workspace = getCurrentWorkspaceName();
 		if (workspace) {
-			execute(['-Add', '-interface', 'VCCCOMPLEXE', '-workspace-destination', workspace]);
+			execute(['-Add', '-interface', 'VCCCOMPLEX', '-workspace-destination', workspace]);
 			logMessage('Create VCC Complex CPP Module!');
 		} else {
 			logError('No workspace open.');
