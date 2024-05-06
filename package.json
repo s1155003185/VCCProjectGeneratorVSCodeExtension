@@ -2,7 +2,7 @@
   "name": "vccprojectgeneratorvscodeextension",
   "displayName": "Versioning Common Codebase Project Generator (VCCProject Generator)",
   "description": "Free, Open Project to Create, Update, Generate Interface + C++ DLL",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "icon": "icon.png",
   "pricing": "Free",
   "author": "VCCProject",
