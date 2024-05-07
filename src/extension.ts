@@ -1,4 +1,4 @@
-import { exec, spawn } from 'child_process';
+import { exec, execSync, spawn } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -111,11 +111,31 @@ function getCurrentWorkspaceName(): string | undefined {
 	return undefined;
 }
 
+function validateVSCodeExtension() {
+	try {
+		execSync('git --version');
+	} catch (error) {
+		throw new Error('Git is not installed.');
+	}
+	try {
+		execSync('make -version');
+	} catch (error) {
+		throw new Error('Make is not installed.');
+	}
+}
+
 function execute(vpgCmds: string[]) {
 	executeAsync(vpgCmds);
 }
 
 async function executeAsync(vpgCmds: string[]) {
+	try {
+		validateVSCodeExtension();
+	} catch (error) {
+		logError('' + error);
+		throw error;
+	}
+
 	let currentDirectory = __dirname;
 	try {
 		let isWindow = process.platform === 'win32';
@@ -135,7 +155,6 @@ async function executeAsync(vpgCmds: string[]) {
 		// -------------------------------------------------- //
 		logMessage('Check whether VCCProjectGenerator binary exists - begin');
 		let documentPath = path.join(os.homedir(), 'Documents');
-		logMessage('cd ' + documentPath);
 		process.chdir(documentPath);
 
 		// check if vcc folder exists, if not then create directory
@@ -146,7 +165,6 @@ async function executeAsync(vpgCmds: string[]) {
 			fs.mkdirSync(vccFolder);
 			logMessage('Created Directory ' + vccFolder + ' end');
 		}
-		logMessage('cd ' + vccFolder);
 		process.chdir(vccFolder);
 
 		let vpgFolder = vccFolder + '/VCCProjectGenerator';
@@ -160,7 +178,6 @@ async function executeAsync(vpgCmds: string[]) {
 		let currentHashID = '';
 		let projectGeneratorVersion = "";
 		try {
-			logMessage('cd ' + vpgFolder);
 			process.chdir(vpgFolder);
 
 			logMessage('Current VCCProjectGenerator Extension version: ' + version);
@@ -170,8 +187,6 @@ async function executeAsync(vpgCmds: string[]) {
 			try {
 				await executeCommand('git', ['pull']);
 			} catch (error) {
-				logMessage('Cannot git pull');
-				//throw new Error('Cannot git pull');				
 			}
 			try {
 				// tag
@@ -198,18 +213,11 @@ async function executeAsync(vpgCmds: string[]) {
 
 		logMessage('git check version end');
 
-		logMessage('cd ' + vpgFolder);
 		process.chdir(vpgFolder);
 
 		var exePath = isWindow ? 'bin/Release/vpg.exe' : 'bin/Release/vpg';
 
 		let newHashID = await executeCommand('git', ['rev-parse', 'HEAD']);
-		// var exePath = isWindow ? 'bin/Debug/vpg.exe' : 'bin/Debug/vpg';
-		// if (!fs.existsSync(exePath)) {
-		// 	logMessage('make begin');
-		// 	await executeCommand('make', ['debug', "-j10"]);
-		// 	logMessage('make end');
-		// }
 		exePath = path.join(process.cwd(), exePath);
 		logMessage('exe path: ' + exePath);
 		if (currentHashID !== newHashID || !fs.existsSync(exePath)) {
@@ -226,15 +234,7 @@ async function executeAsync(vpgCmds: string[]) {
 		// Execute VCC Project Generator
 		// -------------------------------------------------- //
 		logMessage('Execute vpg ' + vpgCmds.join(' '));
-		exec('"' + exePath + '" ' + vpgCmds.join(' '),  (error, stdout, stderr) => {
-			if (error) {
-				logMessage(`exec error: ${error}`);
-			  	return;
-			}
-			logMessage(`stdout: ${stdout}`);
-			logMessage(`stderr: ${stderr}`);
-			console.error(`stderr: ${stderr}`);
-		});
+		execSync('"' + exePath + '" ' + vpgCmds.join(' '));
 	} catch (error) {
 		console.error(`executeAsync error: ${error}`);
 		logError(`executeAsync error: ${error}`);
