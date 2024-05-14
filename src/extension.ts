@@ -185,7 +185,7 @@ async function executeAsync(vpgCmds: string[]) {
 			currentHashID = await executeCommand('git', ['rev-parse', 'HEAD']);
 			// check VCCProjectGenerator version
 			try {
-				await executeCommand('git', ['pull']);
+				await executeCommand('git', ['fetch']);
 			} catch (error) {
 			}
 			try {
@@ -193,6 +193,7 @@ async function executeAsync(vpgCmds: string[]) {
 				projectGeneratorVersion = await executeCommand('git', ['describe', '--tags']);
 			} catch (error) {
 				// branch
+				await executeCommand('git', ['pull']);
 				projectGeneratorVersion = await executeCommand('git', ['branch', '--show-current']);
 			}
 			logMessage('Current VCCProjectGenerator version: ' + projectGeneratorVersion);
