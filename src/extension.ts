@@ -141,6 +141,7 @@ async function executeAsync(vpgCmds: string[]) {
 		let isWindow = process.platform === 'win32';
 		const extension = vscode.extensions.getExtension('VCCProject.vccprojectgeneratorvscodeextension');
 		let version = '';
+		let isBranch = false;
 		if (extension) {
 			version = extension.packageJSON.version;
 			if (!version.startsWith('v')) {
@@ -148,6 +149,7 @@ async function executeAsync(vpgCmds: string[]) {
 			}
 		} else {
 			version = 'main';
+			isBranch = true;
 		}
 
 		// -------------------------------------------------- //
@@ -193,7 +195,6 @@ async function executeAsync(vpgCmds: string[]) {
 				projectGeneratorVersion = await executeCommand('git', ['describe', '--tags']);
 			} catch (error) {
 				// branch
-				await executeCommand('git', ['pull']);
 				projectGeneratorVersion = await executeCommand('git', ['branch', '--show-current']);
 			}
 			logMessage('Current VCCProjectGenerator version: ' + projectGeneratorVersion);
@@ -206,6 +207,9 @@ async function executeAsync(vpgCmds: string[]) {
 				logMessage('Switch to version: ' + version);
 				await executeCommand('git', ['reset', '--hard']);
 				await executeCommand('git', ['checkout', version]);
+				if (isBranch) {
+					await executeCommand('git', ['pull']);
+				}
 			}
 		} catch (error) {
 			logMessage('Cannot get Switch to version ' + projectGeneratorVersion + ': ' + error);
