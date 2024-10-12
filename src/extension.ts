@@ -227,7 +227,7 @@ async function executeAsync(vpgCmds: string[]) {
 		logMessage('exe path: ' + exePath);
 		if (currentHashID !== newHashID || !fs.existsSync(exePath)) {
 			logMessage('make begin');
-			await executeCommand('make', ['release_exe', '-j10']);
+			await executeCommand('make', ['release_exe_no_export', '-j10']);
 			logMessage('make end');
 		}
 		if (!fs.existsSync(exePath)) {
